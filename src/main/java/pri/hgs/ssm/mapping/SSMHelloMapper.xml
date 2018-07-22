@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="priv.hgs.ssm.dao.IHelloDao">
+    <resultMap type="Student" id="Stu">
+        <id property="stid" column="id" />
+        <result property="name" column="name" />
+        <result property="password" column="password" />
+        <result property="genter" column="genter" />
+        <result property="grate" column="grate" />
+        <!-- 一对多关系设置,集合 .注意 两个表的id最好不要一样，否则只能查到一条数据，也可以通过别名解决 -->
+        <collection property="scores" ofType="Score">
+            <id column="scid" property="id" />
+            <result property="course" column="course" />
+            <result property="score" column="score" />
+            <result property="stid" column="stid" />
+        </collection>
+    </resultMap>
+    <!-- 对于数据表与实体类属性不一致情况，使用resultMap进行处理 -->
+    <!--这里不适合使用内连接的方式，即 SELECT st.*,sc.* FROM student st,Score sc WHERE st.id 
+        = #{id} and st.id = sc.sid; 因为：当score没有对应值时，将查不出信息。 所有：最好使用左连接 -->
+    <select id="getStuById" resultMap="Stu">
+        SELECT st.*,sc.* FROM student
+        st LEFT JOIN score sc ON st.id = sc.stid WHERE st.id=#{id};
+    </select>
+    <delete id="delStuById">
+        DELETE FROM student WHERE id = #{stid};
+    </delete>
+    <update id="updateStu" parameterType="Map">
+        UPDATE student
+        <set>
+            <if test="password != null">
+                password = #{password},
+            </if>
+            <if test="grate != null">
+                grate = #{grate}
+            </if>
+        </set>
+        where id = #{stid};
+    </update>
+    <insert id="insetStu" parameterType="Student">
+        INSERT INTO
+        student(name,password,gender,grate)
+        VALUES(#{name},#{password},#{gender},#{grate});
+    </insert>
+</mapper>
